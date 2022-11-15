@@ -1,0 +1,3 @@
+[submodule "shapereader"]
+	path = shapereader
+	url = ../shapereader.git
