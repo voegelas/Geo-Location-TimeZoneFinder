@@ -141,12 +141,12 @@ handle_dbf_header(dbf_file_t *fh, const dbf_header_t *header)
     }
 
     if (!has_tzid) {
-        dbf_error(fh, "No tzid field");
+        dbf_set_error(fh, "No tzid field");
         return -1;
     }
 
     if (header->num_records == 0) {
-        dbf_error(fh, "No records");
+        dbf_set_error(fh, "No records");
         return -1;
     }
 
@@ -175,8 +175,8 @@ handle_dbf_record(dbf_file_t *fh, const dbf_header_t *header,
     }
 
     if (self->dbf_num >= index->num_entries) {
-        dbf_error(fh, "Expected %zu records, got %zu", index->num_entries,
-                  self->dbf_num);
+        dbf_set_error(fh, "Expected %zu records, got %zu", index->num_entries,
+                      self->dbf_num);
         return -1;
     }
 
@@ -219,8 +219,8 @@ handle_shp_record(shp_file_t *fh, const shp_header_t *header,
     index = &self->index;
 
     if (self->shp_num >= index->num_entries) {
-        shp_error(fh, "Expected %zu records, got %zu", index->num_entries,
-                  self->shp_num);
+        shp_set_error(fh, "Expected %zu records, got %zu", index->num_entries,
+                      self->shp_num);
         return -1;
     }
 
@@ -445,7 +445,7 @@ new(klass, ...)
         }
 
         /* Read the time zones. */
-        dbf_fh = dbf_file(&self->dbf_fh, self->dbf_fp, self);
+        dbf_fh = dbf_init_file(&self->dbf_fh, self->dbf_fp, self);
         if (dbf_read(dbf_fh, handle_dbf_header, handle_dbf_record) < 0) {
             croak("Error reading \"%" SVf "\": %s",
                   SVfARG(self->dbf_filename), dbf_fh->error);
@@ -463,7 +463,7 @@ new(klass, ...)
         }
 
         /* Index the shapes by their bounding boxes. */
-        shp_fh = shp_file(&self->shp_fh, self->shp_fp, self);
+        shp_fh = shp_init_file(&self->shp_fh, self->shp_fp, self);
         if (shp_read(shp_fh, handle_shp_header, handle_shp_record) < 0) {
             croak("Error reading \"%" SVf "\": %s",
                   SVfARG(self->shp_filename), shp_fh->error);
