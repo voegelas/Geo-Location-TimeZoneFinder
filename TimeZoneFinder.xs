@@ -359,8 +359,7 @@ get_time_zones(Geo__Location__TimeZoneFinder self,
         entry = index->matches[i];
         offset = entry->file_offset;
 
-        if (offset > (size_t) LONG_MAX
-            || fseek(fp, (long) offset, SEEK_SET) != 0) {
+        if (offset > LONG_MAX || fseek(fp, (long) offset, SEEK_SET) != 0) {
             croak("Cannot set file position to %zu in \"%" SVf "\"",
                   offset, SVfARG(self->shp_filename));
         }
