@@ -1,5 +1,5 @@
 ---
-image: voegelas/perl-devel-cover
+image: voegelas/debian-devel
 
 variables:
   GIT_SUBMODULE_STRATEGY: normal
