@@ -30,7 +30,10 @@
 
 /* Index the shapes by their bounding box. */
 struct index_entry {
-    shp_box_t box;      /* Bounding box from the shp file */
+    double x_min;       /* Bounding box from the shp file */
+    double y_min;
+    double x_max;
+    double y_max;
     size_t file_offset; /* File position of the corresponding polygon */
     SV *time_zone;      /* Time zone name from the dbf file */
 };
@@ -226,7 +229,10 @@ handle_shp_record(shp_file_t *fh, const shp_header_t *header,
 
     entry = &index->entries[self->shp_num];
     if (record->shape_type == SHPT_POLYGON) {
-        entry->box = record->shape.polygon.box;
+        entry->x_min = record->shape.polygon.x_min;
+        entry->y_min = record->shape.polygon.y_min;
+        entry->x_max = record->shape.polygon.x_max;
+        entry->y_max = record->shape.polygon.y_max;
         entry->file_offset = file_offset;
         ++self->shp_num;
     }
@@ -339,7 +345,8 @@ get_time_zones(Geo__Location__TimeZoneFinder self,
     n = index->num_entries;
     for (i = 0; i < n; ++i) {
         entry = &index->entries[i];
-        if (shp_box_point_in_box(&entry->box, location) != 0) {
+        if (shp_point_in_bounding_box(location, entry->x_min, entry->y_min,
+            entry->x_max, entry->y_max) != 0) {
             index->matches[m] = entry;
             ++m;
         }
@@ -374,7 +381,7 @@ get_time_zones(Geo__Location__TimeZoneFinder self,
         if (record != NULL) {
             if (record->shape_type == SHPT_POLYGON) {
                 polygon = &record->shape.polygon;
-                if (shp_polygon_point_in_polygon(polygon, location) != 0) {
+                if (shp_point_in_polygon(location, polygon) != 0) {
                     av_push(time_zones, SvREFCNT_inc(entry->time_zone));
                 }
             }
@@ -593,10 +600,10 @@ index(self)
         rh = (HV *) sv_2mortal((SV *) newHV());
         box = (AV *) sv_2mortal((SV *) newAV());
         av_extend(box, 3);
-        av_push(box, newSVnv(entry->box.x_min));
-        av_push(box, newSVnv(entry->box.y_min));
-        av_push(box, newSVnv(entry->box.x_max));
-        av_push(box, newSVnv(entry->box.y_max));
+        av_push(box, newSVnv(entry->x_min));
+        av_push(box, newSVnv(entry->y_min));
+        av_push(box, newSVnv(entry->x_max));
+        av_push(box, newSVnv(entry->y_max));
         hv_store(rh, "bounding_box", 12, newRV_inc((SV *) box), 0);
         hv_store(rh, "file_offset", 11, newSViv(entry->file_offset), 0);
         hv_store(rh, "time_zone", 9, SvREFCNT_inc(entry->time_zone), 0);
