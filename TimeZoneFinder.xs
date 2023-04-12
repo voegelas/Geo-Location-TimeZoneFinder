@@ -24,16 +24,12 @@
 #endif
 
 #include "shapereader/shapereader.h"
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 /* Index the shapes by their bounding box. */
 struct index_entry {
-    double x_min;       /* Bounding box from the shp file */
-    double y_min;
-    double x_max;
-    double y_max;
+    double bbox[4] ;    /* Bounding box from the shp file */
     size_t file_offset; /* File position of the corresponding polygon */
     SV *time_zone;      /* Time zone name from the dbf file */
 };
@@ -47,8 +43,8 @@ struct index {
 typedef struct geo_location_timezonefinder {
     SV *dbf_filename;
     SV *shp_filename;
-    FILE *dbf_fp;
-    FILE *shp_fp;
+    FILE *dbf_stream;
+    FILE *shp_stream;
     size_t dbf_num;
     size_t shp_num;
     struct index index;
@@ -99,13 +95,13 @@ free_self(Geo__Location__TimeZoneFinder self)
     dTHXa(self->perl);
 
     free_index(self);
-    if (self->dbf_fp != NULL) {
-        (void) fclose(self->dbf_fp);
-        self->dbf_fp = NULL;
+    if (self->dbf_stream != NULL) {
+        (void) fclose(self->dbf_stream);
+        self->dbf_stream = NULL;
     }
-    if (self->shp_fp != NULL) {
-        (void) fclose(self->shp_fp);
-        self->shp_fp = NULL;
+    if (self->shp_stream != NULL) {
+        (void) fclose(self->shp_stream);
+        self->shp_stream = NULL;
     }
     if (self->dbf_filename != NULL) {
         SvREFCNT_dec(self->dbf_filename);
@@ -119,7 +115,7 @@ free_self(Geo__Location__TimeZoneFinder self)
 static int
 is_tzid(const dbf_field_t *field)
 {
-    return field->type == DBFT_CHARACTER;
+    return field->type == DBF_TYPE_CHARACTER;
 }
 
 static int
@@ -228,11 +224,11 @@ handle_shp_record(shp_file_t *fh, const shp_header_t *header,
     }
 
     entry = &index->entries[self->shp_num];
-    if (record->shape_type == SHPT_POLYGON) {
-        entry->x_min = record->shape.polygon.x_min;
-        entry->y_min = record->shape.polygon.y_min;
-        entry->x_max = record->shape.polygon.x_max;
-        entry->y_max = record->shape.polygon.y_max;
+    if (record->type == SHP_TYPE_POLYGON) {
+        entry->bbox[0] = record->shape.polygon.x_min;
+        entry->bbox[1] = record->shape.polygon.y_min;
+        entry->bbox[2] = record->shape.polygon.x_max;
+        entry->bbox[3] = record->shape.polygon.y_max;
         entry->file_offset = file_offset;
         ++self->shp_num;
     }
@@ -332,8 +328,6 @@ get_time_zones(Geo__Location__TimeZoneFinder self,
     struct index *index;
     struct index_entry *entry;
     size_t n, m, i;
-    size_t offset;
-    FILE *fp;
     shp_file_t *fh;
     shp_record_t *record;
     shp_polygon_t *polygon;
@@ -345,8 +339,8 @@ get_time_zones(Geo__Location__TimeZoneFinder self,
     n = index->num_entries;
     for (i = 0; i < n; ++i) {
         entry = &index->entries[i];
-        if (shp_point_in_bounding_box(location, entry->x_min, entry->y_min,
-            entry->x_max, entry->y_max) != 0) {
+        if (shp_point_in_bounding_box(location, entry->bbox[0],
+            entry->bbox[1], entry->bbox[2], entry->bbox[3]) != 0) {
             index->matches[m] = entry;
             ++m;
         }
@@ -361,25 +355,18 @@ get_time_zones(Geo__Location__TimeZoneFinder self,
 
     /* Otherwise, check the polygons in the shp file. */
     fh = &self->shp_fh;
-    fp = fh->fp;
     for (i = 0; i < m; ++i) {
         entry = index->matches[i];
-        offset = entry->file_offset;
-
-        if (offset > LONG_MAX || fseek(fp, (long) offset, SEEK_SET) != 0) {
-            croak("Cannot set file position to %zu in \"%" SVf "\"",
-                  offset, SVfARG(self->shp_filename));
-        }
 
         record = NULL;
 
-        if (shp_read_record(fh, &record) < 0) {
+        if (shp_seek_record(fh, entry->file_offset, &record) < 0) {
             croak("Error reading \"%" SVf "\": %s",
                   SVfARG(self->shp_filename), fh->error);
         }
 
         if (record != NULL) {
-            if (record->shape_type == SHPT_POLYGON) {
+            if (record->type == SHP_TYPE_POLYGON) {
                 polygon = &record->shape.polygon;
                 if (shp_point_in_polygon(location, polygon) != 0) {
                     av_push(time_zones, SvREFCNT_inc(entry->time_zone));
@@ -439,27 +426,27 @@ new(klass, ...)
         sv_catpvs(self->shp_filename, ".shp");
 
         /* Open the database file with the time zones. */
-        self->dbf_fp = fopen(SvPV_nolen_const(self->dbf_filename), "rb");
-        if (self->dbf_fp == NULL) {
+        self->dbf_stream = fopen(SvPV_nolen_const(self->dbf_filename), "rb");
+        if (self->dbf_stream == NULL) {
             croak("Error opening \"%" SVf "\"", SVfARG(self->dbf_filename));
         }
 
         /* Open the main file with the shapes. */
-        self->shp_fp = fopen(SvPV_nolen_const(self->shp_filename), "rb");
-        if (self->shp_fp == NULL) {
+        self->shp_stream = fopen(SvPV_nolen_const(self->shp_filename), "rb");
+        if (self->shp_stream == NULL) {
             croak("Error opening \"%" SVf "\"", SVfARG(self->shp_filename));
         }
 
         /* Read the time zones. */
-        dbf_fh = dbf_init_file(&self->dbf_fh, self->dbf_fp, self);
+        dbf_fh = dbf_init_file(&self->dbf_fh, self->dbf_stream, self);
         if (dbf_read(dbf_fh, handle_dbf_header, handle_dbf_record) < 0) {
             croak("Error reading \"%" SVf "\": %s",
                   SVfARG(self->dbf_filename), dbf_fh->error);
         }
 
         /* The time zone file is no longer needed. */
-        (void) fclose(self->dbf_fp);
-        self->dbf_fp = NULL;
+        (void) fclose(self->dbf_stream);
+        self->dbf_stream = NULL;
 
         expected_size = self->index.num_entries;
 
@@ -469,7 +456,7 @@ new(klass, ...)
         }
 
         /* Index the shapes by their bounding boxes. */
-        shp_fh = shp_init_file(&self->shp_fh, self->shp_fp, self);
+        shp_fh = shp_init_file(&self->shp_fh, self->shp_stream, self);
         if (shp_read(shp_fh, handle_shp_header, handle_shp_record) < 0) {
             croak("Error reading \"%" SVf "\": %s",
                   SVfARG(self->shp_filename), shp_fh->error);
@@ -600,10 +587,10 @@ index(self)
         rh = (HV *) sv_2mortal((SV *) newHV());
         box = (AV *) sv_2mortal((SV *) newAV());
         av_extend(box, 3);
-        av_push(box, newSVnv(entry->x_min));
-        av_push(box, newSVnv(entry->y_min));
-        av_push(box, newSVnv(entry->x_max));
-        av_push(box, newSVnv(entry->y_max));
+        av_push(box, newSVnv(entry->bbox[0]));
+        av_push(box, newSVnv(entry->bbox[1]));
+        av_push(box, newSVnv(entry->bbox[2]));
+        av_push(box, newSVnv(entry->bbox[3]));
         hv_store(rh, "bounding_box", 12, newRV_inc((SV *) box), 0);
         hv_store(rh, "file_offset", 11, newSViv(entry->file_offset), 0);
         hv_store(rh, "time_zone", 9, SvREFCNT_inc(entry->time_zone), 0);
