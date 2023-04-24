@@ -13,4 +13,4 @@ test:
   script:
     - cpanm --quiet --notest --installdeps .
     - perl Makefile.PL
-    - cover -gcov_chdir -test
+    - cover -gcov_chdir -ignore_re '[.][ch]$' -test

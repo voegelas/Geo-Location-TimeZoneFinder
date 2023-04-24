@@ -27,4 +27,4 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           perl Makefile.PL
-          cover -gcov_chdir -test -report coveralls
+          cover -gcov_chdir -ignore_re '[.][ch]$' -test -report coveralls
