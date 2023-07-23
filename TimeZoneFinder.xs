@@ -167,6 +167,8 @@ handle_dbf_record(dbf_file_t *fh, const dbf_header_t *header,
     const char *s;
     size_t len;
 
+    PERL_UNUSED_ARG(file_offset);
+
     index = &self->index;
 
     if (dbf_record_is_deleted(record)) {
@@ -201,6 +203,8 @@ handle_shp_header(shp_file_t *fh, const shp_header_t *header)
     Geo__Location__TimeZoneFinder self =
        (Geo__Location__TimeZoneFinder) fh->user_data;
 
+    PERL_UNUSED_ARG(header);
+
     self->shp_num = 0;
 
     return 1;
@@ -214,6 +218,8 @@ handle_shp_record(shp_file_t *fh, const shp_header_t *header,
        (Geo__Location__TimeZoneFinder) fh->user_data;
     struct index *index;
     struct index_entry *entry;
+
+    PERL_UNUSED_ARG(header);
 
     index = &self->index;
 
