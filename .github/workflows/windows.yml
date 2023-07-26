@@ -1,5 +1,5 @@
 ---
-name: linux
+name: windows
 
 on:
   push:
@@ -12,24 +12,22 @@ on:
 jobs:
   perl:
 
-    runs-on: ubuntu-latest
-
-    container:
-      image: voegelas/debian-devel
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
+      - name: Set up Perl
+        run: |
+          choco install strawberryperl
+          echo "C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: perl -V
         run: perl -V
       - name: Install dependencies
         run: |
           cpanm --quiet --notest --installdeps .
       - name: Run tests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           perl Makefile.PL
-          cover -gcov_chdir -ignore_re '[.][ch]$' -test -report coveralls
+          make test
