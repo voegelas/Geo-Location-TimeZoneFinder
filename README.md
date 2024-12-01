@@ -5,7 +5,8 @@ A Perl module that maps geographic coordinates to time zone names such as
 Timezone Boundary Builder project.
 
     use Geo::Location::TimeZoneFinder;
-    my $finder = Geo::Location::TimeZoneFinder->new(file_base => 'shapefile');
+    my $finder = Geo::Location::TimeZoneFinder->new(
+      file_base => '/path/to/combined-shapefile');
     my @time_zones = $finder->time_zones_at(lat => $lat, lon => $lon);
 
 ## DEPENDENCIES

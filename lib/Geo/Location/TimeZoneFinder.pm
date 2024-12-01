@@ -29,7 +29,7 @@ version 1.001
   use Geo::Location::TimeZoneFinder;
 
   my $finder = Geo::Location::TimeZoneFinder->new(
-    file_base => 'combined-shapefile');
+    file_base => '/path/to/combined-shapefile');
   my @time_zones = $finder->time_zones_at(lat => $lat, lon => $lon);
 
 =head1 DESCRIPTION
@@ -43,7 +43,7 @@ Timezone Boundary Builder project.
 =head2 new
 
   my $finder = Geo::Location::TimeZoneFinder->new(
-    file_base => 'combined-shapefile');
+    file_base => '/path/to/combined-shapefile');
 
 The "file_base" parameter is the base path name for your database files.  The
 extensions F<.dbf> and F<.shp> will be added to the base path name.
@@ -154,7 +154,7 @@ Most Unix systems accept time zone names in the environment variable C<TZ>.
   use Geo::Location::TimeZoneFinder;
 
   my $finder = Geo::Location::TimeZoneFinder->new(
-    file_base => 'combined-shapefile');
+    file_base => '/path/to/combined-shapefile');
 
   my $tz   = $finder->time_zone_at(lat => 39.916, lon => 116.383);
   my @time = do { local $ENV{TZ} = ":$tz"; localtime };
@@ -166,7 +166,7 @@ Speed up repeated lookups by using a cache.
 
   my $cache  = Mojo::Cache->new;
   my $finder = Geo::Location::TimeZoneFinder->new(
-    file_base => 'combined-shapefile');
+    file_base => '/path/to/combined-shapefile');
 
   sub time_zone_at {
     my %args = @_;
