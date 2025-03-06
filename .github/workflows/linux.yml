@@ -23,9 +23,6 @@ jobs:
           submodules: true
       - name: perl -V
         run: perl -V
-      - name: Install dependencies
-        run: |
-          cpanm --quiet --notest --installdeps .
       - name: Run tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
