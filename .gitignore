@@ -13,3 +13,6 @@
 /cover_db
 /pm_to_blib
 MYMETA.*
+TimeZoneFinder.bs
+TimeZoneFinder.c
+TimeZoneFinder.o
