@@ -106,6 +106,14 @@ No "latitude" parameter was given.
 
 No "longitude" parameter was given.
 
+=item B<< The "latitude" parameter "Y" is not numeric >>
+
+The latitude must be a number.
+
+=item B<< The "longitude" parameter "X" is not numeric >>
+
+The longitude must be a number.
+
 =item B<< The "latitude" parameter N is not a number between -90 and 90 >>
 
 The latitude must be a number between -90 and 90.
