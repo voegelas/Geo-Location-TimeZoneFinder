@@ -11,20 +11,33 @@ on:
 
 jobs:
   perl:
-
+    strategy:
+      matrix:
+        perl: ["5.42", "5.16"]
+        distribution: ["default", "strawberry"]
+        exclude:
+          - distribution: default
+            perl: "5.16"
+      fail-fast: false
+    env:
+      MAKECMD: ${{ (matrix.distribution == 'strawberry' && matrix.perl == '5.16' && 'dmake') || 'gmake' }}
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: true
       - name: Set up Perl
-        run: |
-          choco install strawberryperl
-          echo "C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+          distribution: ${{ matrix.distribution }}
+          enable-modules-cache: false
       - name: perl -V
         run: perl -V
-      - name: Run tests
+      - name: Build module
         run: |
           perl Makefile.PL
-          make test
+          ${{ env.MAKECMD }}
+      - name: Run tests
+        run: |
+          ${{ env.MAKECMD }} test
