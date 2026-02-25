@@ -1,5 +1,10 @@
 Revision history for Geo::Location::TimeZoneFinder
 
+1.002  2026-02-25 03:43:00 CET
+
+  - Convert coordinates passed as strings to numbers. Contributed by
+    brian d foy.
+
 1.001  2023-07-23 10:59:17 CEST
 
   - Fix the tests by not importing "new"

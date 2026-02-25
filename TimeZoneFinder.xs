@@ -1,7 +1,7 @@
 /*
  * Map geographic coordinates to time zone names
  *
- * Copyright (C) 2023 Andreas Vögele
+ * Copyright (C) 2026 Andreas Vögele
  *
  * This module is free software; you can redistribute it and/or modify it
  * under the same terms as Perl itself.

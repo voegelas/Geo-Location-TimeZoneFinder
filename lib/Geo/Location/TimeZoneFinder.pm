@@ -6,7 +6,7 @@ use 5.016;
 use warnings;
 use utf8;
 
-our $VERSION = 1.001;
+our $VERSION = 1.002;
 
 require XSLoader;
 XSLoader::load(__PACKAGE__, $VERSION);
@@ -22,7 +22,7 @@ Geo::Location::TimeZoneFinder - Map geographic coordinates to time zone names
 
 =head1 VERSION
 
-version 1.001
+version 1.002
 
 =head1 SYNOPSIS
 
@@ -192,13 +192,23 @@ from the comparison operations of floating-point numbers".
 Reliable Point-in-Polygon Test and Differential Coding Boolean Operations on
 Polygons". Symmetry, 10, 2018.
 
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to all who have contributed patches and reported bugs:
+
+=over
+
+=item * brian d foy
+
+=back
+
 =head1 AUTHOR
 
 Andreas Vögele E<lt>voegelas@cpan.orgE<gt>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2023 Andreas Vögele
+Copyright (C) 2026 Andreas Vögele
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
