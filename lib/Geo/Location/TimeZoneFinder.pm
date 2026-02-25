@@ -148,8 +148,9 @@ None.
 =head1 DEPENDENCIES
 
 Requires the file F<timezones.shapefile.zip> from
-L<https://github.com/evansiroky/timezone-boundary-builder>.  The zip archive
-must be extracted to a directory.
+L<https://github.com/evansiroky/timezone-boundary-builder>.  Get the zip
+archive from the latest release's assets.  The archive must be extracted to a
+directory.
 
 =head1 INCOMPATIBILITIES
 

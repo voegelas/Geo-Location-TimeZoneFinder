@@ -12,8 +12,9 @@ Timezone Boundary Builder project.
 ## DEPENDENCIES
 
 Requires the file "timezones.shapefile.zip" from the [Timezone Boundary
-Builder](https://github.com/evansiroky/timezone-boundary-builder) project.
-The zip archive must be extracted to a directory.
+Builder](https://github.com/evansiroky/timezone-boundary-builder) project.  Get
+the zip archive from the latest release's assets.  The archive must be
+extracted to a directory.
 
 ## INSTALLATION
 
