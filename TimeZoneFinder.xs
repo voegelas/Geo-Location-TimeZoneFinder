@@ -512,18 +512,10 @@ time_zones_at(self, ...)
         key = SvPV_nolen_const(ST(i));
         value = ST(i + 1);
         if (strEQ(key, "lat") || strEQ(key, "latitude")) {
-            if (!looks_like_number(value)) {
-                croak("The \"latitude\" parameter \"%s\" is not numeric", SvPV_nolen(value));
-            }
             latitude = value;
-            (void) SvNV(latitude);
         }
         else if (strEQ(key, "lon") || strEQ(key, "longitude")) {
-            if (!looks_like_number(value)) {
-                croak("The \"longitude\" parameter \"%s\" is not numeric", SvPV_nolen(value));
-            }
             longitude = value;
-            (void) SvNV(longitude);
         }
     }
 
@@ -535,14 +527,14 @@ time_zones_at(self, ...)
         croak("The \"longitude\" parameter is mandatory");
     }
 
-    if (!SvNIOK(latitude)) {
-        croak("The \"latitude\" parameter %" SVf " is not a number between "
-              "-90 and 90", SVfARG(latitude));
+    if (!looks_like_number(latitude)) {
+        croak("The \"latitude\" parameter \"%" SVf "\" is not numeric",
+              SVfARG(latitude));
     }
 
-    if (!SvNIOK(longitude)) {
-        croak("The \"longitude\" parameter %" SVf " is not a number between "
-              "-180 and 180", SVfARG(longitude));
+    if (!looks_like_number(longitude)) {
+        croak("The \"longitude\" parameter \"%" SVf "\" is not numeric",
+              SVfARG(longitude));
     }
 
     lat = SvNV(latitude);
