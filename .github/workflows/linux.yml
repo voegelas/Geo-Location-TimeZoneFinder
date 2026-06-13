@@ -1,5 +1,7 @@
 ---
 name: linux
+permissions:
+  contents: read
 
 on:
   push:
@@ -19,7 +21,7 @@ jobs:
       options: --user root
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - name: perl -V

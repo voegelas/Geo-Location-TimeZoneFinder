@@ -1,5 +1,7 @@
 ---
 name: windows
+permissions:
+  contents: read
 
 on:
   push:
@@ -23,7 +25,7 @@ jobs:
       MAKECMD: ${{ (matrix.distribution == 'strawberry' && matrix.perl == '5.16' && 'dmake') || 'gmake' }}
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - name: Set up Perl
